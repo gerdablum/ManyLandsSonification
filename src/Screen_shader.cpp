@@ -45,7 +45,7 @@ void Screen_shader::append_to_geometry(Screen_geometry& geom,
                             float width)
         {
             auto norm = glm::rotate(p2.pos - p1.pos,
-                                    static_cast<float>(PI / 2));
+                                    static_cast<float>(PI_ / 2));
             return 0.5f * width * glm::normalize(norm);
         };
         

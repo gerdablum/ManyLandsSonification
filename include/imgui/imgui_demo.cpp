@@ -2471,7 +2471,7 @@ static void ShowDemoWindowPopups()
         if (ImGui::BeginPopupContextItem("item context menu"))
         {
             if (ImGui::Selectable("Set to zero")) value = 0.0f;
-            if (ImGui::Selectable("Set to PI")) value = 3.1415f;
+            if (ImGui::Selectable("Set to PI_")) value = 3.1415f;
             ImGui::SetNextItemWidth(-1);
             ImGui::DragFloat("##Value", &value, 0.1f, 0.0f, 0.0f);
             ImGui::EndPopup();

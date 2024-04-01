@@ -84,7 +84,7 @@ namespace glm
 	GLM_FUNC_DECL vec<L, T, Q> tan(vec<L, T, Q> const& angle);
 
 	/// Arc sine. Returns an angle whose sine is x.
-	/// The range of values returned by this function is [-PI/2, PI/2].
+	/// The range of values returned by this function is [-PI_/2, PI_/2].
 	/// Results are undefined if |x| > 1.
 	///
 	/// @tparam L Integer between 1 and 4 included that qualify the dimension of the vector
@@ -97,7 +97,7 @@ namespace glm
 	GLM_FUNC_DECL vec<L, T, Q> asin(vec<L, T, Q> const& x);
 
 	/// Arc cosine. Returns an angle whose sine is x.
-	/// The range of values returned by this function is [0, PI].
+	/// The range of values returned by this function is [0, PI_].
 	/// Results are undefined if |x| > 1.
 	///
 	/// @tparam L Integer between 1 and 4 included that qualify the dimension of the vector
@@ -112,7 +112,7 @@ namespace glm
 	/// Arc tangent. Returns an angle whose tangent is y/x.
 	/// The signs of x and y are used to determine what
 	/// quadrant the angle is in. The range of values returned
-	/// by this function is [-PI, PI]. Results are undefined
+	/// by this function is [-PI_, PI_]. Results are undefined
 	/// if x and y are both 0.
 	///
 	/// @tparam L Integer between 1 and 4 included that qualify the dimension of the vector
@@ -125,7 +125,7 @@ namespace glm
 	GLM_FUNC_DECL vec<L, T, Q> atan(vec<L, T, Q> const& y, vec<L, T, Q> const& x);
 
 	/// Arc tangent. Returns an angle whose tangent is y_over_x.
-	/// The range of values returned by this function is [-PI/2, PI/2].
+	/// The range of values returned by this function is [-PI_/2, PI_/2].
 	///
 	/// @tparam L Integer between 1 and 4 included that qualify the dimension of the vector
 	/// @tparam T Floating-point scalar types

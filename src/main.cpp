@@ -43,6 +43,10 @@
 #include "Timeline_renderer.h"
 #include "Diffuse_shader.h"
 #include "Screen_shader.h"
+
+// stk
+#include "FileLoop.h"
+#include "FileWvOut.h"
 // Boost
 #include <boost/numeric/ublas/assignment.hpp>
 
@@ -273,6 +277,10 @@ void update_timer()
 void mainloop()
 {
     update_timer();
+
+    if (Is_player_active) {
+        // TODO play sound
+    }
 
     ImGuiIO& io = ImGui::GetIO(); (void)io;
 
@@ -918,6 +926,12 @@ int main(int, char**)
     Timeline.set_shader(Screen_shad);
 
     State->camera_4D <<= 0., 0., 0., 550., 0.;
+
+    // setup stk stuff
+    stk::Stk::setSampleRate( 44100.0 );
+
+    stk::FileLoop input;
+    stk::FileWvOut output;
 
 #ifdef __EMSCRIPTEN__
     emscripten_set_main_loop(mainloop, 0, 0);

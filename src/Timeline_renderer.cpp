@@ -965,7 +965,7 @@ Timeline_renderer::get_compases_state(const Region& region)
             pictog_s = 1 + (scale - 1.f) * magnification_func(x_diff);
             
             // Compute and apply the displacement
-            float coeff = std::sin(static_cast<float>(std::abs(x_diff) * PI));
+            float coeff = std::sin(static_cast<float>(std::abs(x_diff) * PI_));
             float disp = coeff * 0.5f * required_area;
             pictog_x += x_diff > 0.f ? disp : -disp;
         }
@@ -1062,19 +1062,19 @@ void Timeline_renderer::project_point(
     if(point.size() < 4)
         return;
 
-    const auto axis_size = size * std::sin(static_cast<float>(PI / 8));
+    const auto axis_size = size * std::sin(static_cast<float>(PI_ / 8));
     const auto dist_to_origin =
-        0.5f * size - 2 * size * std::pow(static_cast<float>(std::sin(PI / 8)), 2);
+        0.5f * size - 2 * size * std::pow(static_cast<float>(std::sin(PI_ / 8)), 2);
 
     Scene_vertex_t origin(2);
-    origin(0) = dist_to_origin * std::cos(static_cast<float>(7 * PI / 8));
-    origin(1) = -dist_to_origin * std::sin(static_cast<float>(7 * PI / 8));
+    origin(0) = dist_to_origin * std::cos(static_cast<float>(7 * PI_ / 8));
+    origin(1) = -dist_to_origin * std::sin(static_cast<float>(7 * PI_ / 8));
 
     auto copy_p = point;
 
     // sin and cos of 45 degrees
-    const auto sin_45 = std::sin(static_cast<float>(PI / 4));
-    const auto cos_45 = std::cos(static_cast<float>(PI / 4));
+    const auto sin_45 = std::sin(static_cast<float>(PI_ / 4));
+    const auto cos_45 = std::cos(static_cast<float>(PI_ / 4));
 
     // X-axis
     point(0) = origin(0) + axis_size * (0.5f + copy_p(0) / state_->tesseract_size[0]);
@@ -1126,7 +1126,7 @@ void Timeline_renderer::update_regions()
 float Timeline_renderer::magnification_func(float x)
 {
     // y = (cos(pi * x)) ^ 2
-    return std::pow(std::cos(static_cast<float>(PI) * x), 2);
+    return std::pow(std::cos(static_cast<float>(PI_) * x), 2);
 }
 
 //******************************************************************************

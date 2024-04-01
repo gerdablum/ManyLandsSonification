@@ -61,7 +61,7 @@ void Mesh_generator::cylinder(
     // creating vertices and normals
     for(unsigned int i = 0; i < num_verts + 1; ++i)
     {
-        float angle = static_cast<float>(2 * PI * i / num_verts);
+        float angle = static_cast<float>(2 * PI_ * i / num_verts);
 
         glm::vec3 lower_vert;
         lower_vert[0] = 0.5f * start_diameter * std::cos(angle);
@@ -152,7 +152,7 @@ void Mesh_generator::cylinder_v2(
     // creating vertices and normals
     for(unsigned int i = 0; i < num_verts + 1; ++i)
     {
-        float angle = static_cast<float>(2 * PI * i / num_verts);
+        float angle = static_cast<float>(2 * PI_ * i / num_verts);
 
         glm::vec3 lower_vert;
         lower_vert[0] = 0.5f * start_diameter * std::cos(angle);
@@ -273,8 +273,8 @@ void Mesh_generator::sphere(
     {
         for(unsigned int j = 0; j < rings + 1; ++j)
         {
-            float alpha = static_cast<float>(PI * i / segments);
-            float betta = static_cast<float>(2 * PI * j / rings);
+            float alpha = static_cast<float>(PI_ * i / segments);
+            float betta = static_cast<float>(2 * PI_ * j / rings);
 
             glm::vec3 vert;
             vert[0] = diameter * std::sin(alpha) * cos(betta);

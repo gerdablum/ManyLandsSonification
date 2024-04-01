@@ -1050,7 +1050,7 @@ void Scene_renderer::tesseract_unfolding(
     // Cube and curve 1 and 5
     {
         auto rot = Matrix_lib_f::getYWRotationMatrix(
-            static_cast<float>(-coeff * PI / 2));
+            static_cast<float>(-coeff * PI_ / 2));
         Scene_vertex_t disp1(5);
         disp1 <<= 0,
                   state_->tesseract_size[1] / 2,
@@ -1078,7 +1078,7 @@ void Scene_renderer::tesseract_unfolding(
     // Cube and curve 3
     {
         auto rot = Matrix_lib_f::getZWRotationMatrix(
-            static_cast<float>(coeff * PI / 2));
+            static_cast<float>(coeff * PI_ / 2));
         Scene_vertex_t disp(5);
         disp <<= 0,
                  0,
@@ -1094,7 +1094,7 @@ void Scene_renderer::tesseract_unfolding(
     // Cube and curve 4
     {
         auto rot = Matrix_lib_f::getZWRotationMatrix(
-            static_cast<float>(-coeff * PI / 2));
+            static_cast<float>(-coeff * PI_ / 2));
         Scene_vertex_t disp(5);
         disp <<= 0,
                  0,
@@ -1110,7 +1110,7 @@ void Scene_renderer::tesseract_unfolding(
     // Cube and curve 6
     {
         auto rot = Matrix_lib_f::getYWRotationMatrix(
-            static_cast<float>(coeff * PI / 2));
+            static_cast<float>(coeff * PI_ / 2));
         Scene_vertex_t disp(5);
         disp <<= 0,
                  -state_->tesseract_size[1] / 2,
@@ -1126,7 +1126,7 @@ void Scene_renderer::tesseract_unfolding(
     // Cube and curve 7
     {
         auto rot = Matrix_lib_f::getXWRotationMatrix(
-            static_cast<float>(coeff * PI / 2));
+            static_cast<float>(coeff * PI_ / 2));
         Scene_vertex_t disp(5);
         disp <<= state_->tesseract_size[0] / 2,
                  0,
@@ -1142,7 +1142,7 @@ void Scene_renderer::tesseract_unfolding(
     // Cube and curve 8
     {
         auto rot = Matrix_lib_f::getXWRotationMatrix(
-            static_cast<float>(-coeff * PI / 2));
+            static_cast<float>(-coeff * PI_ / 2));
         Scene_vertex_t disp(5);
         disp <<= -state_->tesseract_size[0] / 2,
                   0,
@@ -1294,7 +1294,7 @@ void Scene_renderer::plots_unfolding(
         auto rot_axis =
             plots_2D[1].get_vertices()[1] - plots_2D[1].get_vertices()[0];
         auto rot = Matrix_lib_f::getRotationMatrix(
-            static_cast<float>(coeff * PI / 2),
+            static_cast<float>(coeff * PI_ / 2),
             rot_axis(0),
             rot_axis(1),
             rot_axis(2));
@@ -1317,7 +1317,7 @@ void Scene_renderer::plots_unfolding(
         auto rot_axis =
             plots_2D[4].get_vertices()[2] - plots_2D[4].get_vertices()[1];
         auto rot = Matrix_lib_f::getRotationMatrix(
-            static_cast<float>(coeff * PI / 2),
+            static_cast<float>(coeff * PI_ / 2),
             rot_axis(0),
             rot_axis(1),
             rot_axis(2));
