@@ -9,7 +9,8 @@ endif()
 
 set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_SOURCE_DIR}/cmake/")
 
-
+set(STK_DIR C:/Users/Alina/Master-Projects/4D-sonification/sonification-libraries/stk-5.0.1)
+set(STK_BINARY_DIR C:/Users/Alina/Master-Projects/4D-sonification/sonification-libraries/stk-build)
 
 if (MSVC)
     add_definitions("/MP")
@@ -51,15 +52,18 @@ endif()
 set(destinationName "${CMAKE_CURRENT_BINARY_DIR}/${CMAKE_BUILD_TYPE}")
 file(COPY ${CMAKE_CURRENT_SOURCE_DIR}/assets DESTINATION ${destinationName})
 file(COPY ${CMAKE_CURRENT_SOURCE_DIR}/dlls/SDL2.dll DESTINATION ${destinationName})
+file(COPY ${STK_DIR}/rawwaves DESTINATION ${destinationName})
 
 include(CMakePrintHelpers)
 set(destinationName "${CMAKE_CURRENT_BINARY_DIR}/${CMAKE_BUILD_TYPE}")
 message("Copy files to where .exe is located at \"${destinationName}\"")
 
 if(WIN32)
-    add_executable(ManyLands ${GUI_TYPE} ${CPP_FILES} ${GL3W_FILES} ${IMGUI_FILES} ${H_FILES} ${SHADERS_FILES})
+    add_executable(ManyLands ${GUI_TYPE} ${CPP_FILES} ${GL3W_FILES} ${IMGUI_FILES} ${H_FILES} ${SHADERS_FILES}
+            src/Audio.cpp)
 else()
-    add_executable(ManyLands ${GUI_TYPE} ${CPP_FILES} ${IMGUI_FILES} ${H_FILES} ${SHADERS_FILES})
+    add_executable(ManyLands ${GUI_TYPE} ${CPP_FILES} ${IMGUI_FILES} ${H_FILES} ${SHADERS_FILES}
+            src/Audio.cpp)
 endif()
 
 source_group("imgui" FILES ${IMGUI_FILES})
@@ -70,8 +74,6 @@ if(WIN32)
 endif()
 
 # stk library
-set(STK_DIR C:/Users/Alina/Master-Projects/4D-sonification/sonification-libraries/stk-5.0.1)
-set(STK_BINARY_DIR C:/Users/Alina/Master-Projects/4D-sonification/sonification-libraries/stk-build)
 add_subdirectory(${STK_DIR} ${STK_BINARY_DIR})
 target_link_libraries(ManyLands stk)
 

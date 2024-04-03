@@ -43,10 +43,9 @@
 #include "Timeline_renderer.h"
 #include "Diffuse_shader.h"
 #include "Screen_shader.h"
+#include "Audio.h"
+#include "Mandolin.h"
 
-// stk
-#include "FileLoop.h"
-#include "FileWvOut.h"
 // Boost
 #include <boost/numeric/ublas/assignment.hpp>
 
@@ -65,6 +64,7 @@
 #include IMGUI_IMPL_OPENGL_LOADER_CUSTOM
 #endif
 #endif
+#include <string>
 
 namespace
 {
@@ -107,6 +107,10 @@ const std::shared_ptr<Text_renderer> Text_ren =
     std::make_shared<Text_renderer>();
 
 Scene Scene_objs(State);
+
+RtAudio dac;
+Audio audio(&dac);
+bool isAudioPlaying = false;
 
 Base_renderer::Region Scene_region, Timeline_region;
 Base_renderer::Renderer_io Previous_io;
@@ -277,10 +281,6 @@ void update_timer()
 void mainloop()
 {
     update_timer();
-
-    if (Is_player_active) {
-        // TODO play sound
-    }
 
     ImGuiIO& io = ImGui::GetIO(); (void)io;
 
@@ -770,12 +770,21 @@ void mainloop()
 
     Renderer.render();
     Timeline.render();
-
     Text_ren->render(width, height);
     ImGui::Render();
 
     ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
     SDL_GL_SwapWindow(MainWindow);
+
+    // Audio
+
+    if (Is_player_active && !isAudioPlaying) {
+        audio.startStream();
+        isAudioPlaying = true;
+    } else if (!Is_player_active && isAudioPlaying) {
+        audio.stopStream();
+        isAudioPlaying = false;
+    }
 }
 
 #if __EMSCRIPTEN__
@@ -811,6 +820,7 @@ void js_load_ode()
 }
 #endif
 } // namespace end
+
 
 //******************************************************************************
 // main
@@ -924,20 +934,21 @@ int main(int, char**)
 
     Renderer.set_shaders(Diffuse_shad, Screen_shad);
     Timeline.set_shader(Screen_shad);
-
     State->camera_4D <<= 0., 0., 0., 550., 0.;
 
-    // setup stk stuff
-    stk::Stk::setSampleRate( 44100.0 );
-
-    stk::FileLoop input;
-    stk::FileWvOut output;
 
 #ifdef __EMSCRIPTEN__
     emscripten_set_main_loop(mainloop, 0, 0);
 #else
-
     Last_timepoint = std::chrono::system_clock::now();
+
+    stk::Stk::setRawwavePath("rawwaves");
+    TickData instrumentData;
+    audio.initStream(&instrumentData);
+    audio.setTickData(&instrumentData);
+    instrumentData.instrument = new stk::Mandolin(220.0);
+    instrumentData.frequency = 220.0;
+
     // Main loop
     while(!done)
     {
@@ -945,6 +956,8 @@ int main(int, char**)
     }
 
     // Cleanup
+
+    dac.closeStream();
     ImGui_ImplOpenGL3_Shutdown();
     ImGui_ImplSDL2_Shutdown();
     ImGui::DestroyContext();
