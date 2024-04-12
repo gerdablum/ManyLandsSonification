@@ -11,9 +11,12 @@ int tick( void *outputBuffer, void *inputBuffer, unsigned int nBufferFrames,
           double streamTime, RtAudioStreamStatus status, void *dataPointer )
 {
     TickData *data = (TickData *) dataPointer;
+    stk::SineWave *sine = data->sine;
+    sine->setFrequency(data->frequency* 200);
+    std::cout << data->frequency;
     stk::StkFloat *samples = (stk::StkFloat *) outputBuffer;
     for ( unsigned int i=0; i<nBufferFrames; i++ ) {
-        *samples++ = data->instrument->tick();
+        *samples++ = sine->tick();
     }
 
     return 0;
@@ -43,7 +46,6 @@ int Audio::initStream(TickData* userData) {
 
 void Audio::startStream() {
     if (!isPlayingSound) {
-        userData_->instrument->noteOn(220, 0.6);
         if ( dac_->startStream() ) {
             std::cout << dac_->getErrorText() << std::endl;
         }
@@ -54,7 +56,6 @@ void Audio::startStream() {
 
 void Audio::stopStream() {
     if (isPlayingSound) {
-        userData_->instrument->noteOff(0.6);
         dac_->stopStream();
         isPlayingSound = false;
     }

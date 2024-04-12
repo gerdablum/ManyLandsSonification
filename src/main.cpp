@@ -45,6 +45,7 @@
 #include "Screen_shader.h"
 #include "Audio.h"
 #include "Mandolin.h"
+#include "Whistle.h"
 
 // Boost
 #include <boost/numeric/ublas/assignment.hpp>
@@ -110,6 +111,7 @@ Scene Scene_objs(State);
 
 RtAudio dac;
 Audio audio(&dac);
+TickData instrumentData;
 bool isAudioPlaying = false;
 
 Base_renderer::Region Scene_region, Timeline_region;
@@ -271,6 +273,7 @@ void update_timer()
         State->timeplayer_pos = std::fmod(
             State->timeplayer_pos +
             static_cast<float>(delta_t.count()) * Player_speed, 1.f);
+
     }
 }
 
@@ -777,10 +780,17 @@ void mainloop()
     SDL_GL_SwapWindow(MainWindow);
 
     // Audio
-
+    auto curve = State->selected_curve();
+    if (curve) {
+        auto speeds = curve->get_stats().speed;
+        int idx =(int) (State->timeplayer_pos * (float) (speeds.size()-1));
+        auto speed = speeds[idx];
+        instrumentData.frequency = speed;
+    }
     if (Is_player_active && !isAudioPlaying) {
         audio.startStream();
         isAudioPlaying = true;
+        //State
     } else if (!Is_player_active && isAudioPlaying) {
         audio.stopStream();
         isAudioPlaying = false;
@@ -942,12 +952,12 @@ int main(int, char**)
 #else
     Last_timepoint = std::chrono::system_clock::now();
 
+    stk::SineWave sine;
+    instrumentData.sine = &sine;
     stk::Stk::setRawwavePath("rawwaves");
-    TickData instrumentData;
     audio.initStream(&instrumentData);
     audio.setTickData(&instrumentData);
-    instrumentData.instrument = new stk::Mandolin(220.0);
-    instrumentData.frequency = 220.0;
+    instrumentData.frequency = 440.0;
 
     // Main loop
     while(!done)

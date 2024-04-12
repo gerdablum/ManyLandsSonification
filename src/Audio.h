@@ -13,7 +13,7 @@
 #include "Instrmnt.h"
 
 struct TickData {
-    stk::Instrmnt *instrument;
+    stk::SineWave* sine;
     stk::StkFloat frequency;
     stk::StkFloat scaler;
     long counter;
@@ -21,7 +21,7 @@ struct TickData {
 
     // Default constructor.
     TickData()
-            : instrument(nullptr), frequency(440.0), scaler(1.0), counter(0), done( false ) {}
+            : sine(), frequency(440.0), scaler(1.0), counter(0), done( false ) {}
 };
 
 class Audio {
