@@ -12,8 +12,7 @@ int tick( void *outputBuffer, void *inputBuffer, unsigned int nBufferFrames,
 {
     TickData *data = (TickData *) dataPointer;
     stk::SineWave *sine = data->sine;
-    sine->setFrequency(data->frequency* 200);
-    std::cout << data->frequency;
+    sine->setFrequency(data->frequency);
     stk::StkFloat *samples = (stk::StkFloat *) outputBuffer;
     for ( unsigned int i=0; i<nBufferFrames; i++ ) {
         *samples++ = sine->tick();

@@ -67,6 +67,33 @@ Scene_vertex_t Curve::get_point(float time)
            coeff * (get_vertices()[range[1]] - get_vertices()[range[0]]);
 }
 
+int Curve::get_index(float time) {
+    // We assume that points are already sorted by the time stamp value
+    if(time <= time_stamp_.front())
+        return 0;
+
+    if(time >= time_stamp_.back())
+        return get_vertices().size() -1;
+
+    size_t range[2];
+    range[0] = 0;
+    range[1] = time_stamp_.size() - 1;
+
+    while(range[1] - range[0] > 1)
+    {
+        size_t middle = static_cast<size_t>(0.5f * (range[1] + range[0]));
+        if(time_stamp_[middle] > time)
+            range[1] = middle;
+        else
+            range[0] = middle;
+    }
+
+    float coeff = (time - time_stamp_[range[0]]) /
+                  (time_stamp_[range[1]] - time_stamp_[range[0]]);
+
+    return (int) range[0] + coeff * (range[1] - range[0]);
+}
+
 //******************************************************************************
 // time_stamp
 //******************************************************************************
@@ -106,7 +133,7 @@ float Curve::t_duration() const
 //******************************************************************************
 // get_simpified_curve
 //
-// Provides a simplified curve using the Ramer–Douglas–Peucker algorithm
+// Provides a simplified curve using the Ramerï¿½Douglasï¿½Peucker algorithm
 //******************************************************************************
 
 Curve Curve::get_simpified_curve(const float max_deviation)

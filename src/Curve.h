@@ -18,6 +18,7 @@ public:
 
     void add_point(Scene_vertex_t vertex, float time);
     Scene_vertex_t get_point(float time);
+    int Curve::get_index(float time);
 
     // Timestamp-related functions
     const std::vector<float>& time_stamp() const;

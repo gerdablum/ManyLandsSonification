@@ -782,10 +782,16 @@ void mainloop()
     // Audio
     auto curve = State->selected_curve();
     if (curve) {
+        //Timeline.get_log_curve_speed(State->curve_selection, curve);
+        // c.t_min() + state_->timeplayer_pos * c.t_duration()
+
         auto speeds = curve->get_stats().speed;
-        int idx =(int) (State->timeplayer_pos * (float) (speeds.size()-1));
-        auto speed = speeds[idx];
-        instrumentData.frequency = speed;
+        auto minSpeed = curve->get_stats().min_speed;
+        auto maxSpeed = curve->get_stats().max_speed;
+
+        float time = curve->t_min() +  State->timeplayer_pos * curve->t_duration();
+        auto speed = speeds[curve->get_index(time)];
+        instrumentData.setFrequencyFromSpeed(speed, minSpeed, maxSpeed);
     }
     if (Is_player_active && !isAudioPlaying) {
         audio.startStream();
