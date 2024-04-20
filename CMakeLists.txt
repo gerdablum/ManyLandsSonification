@@ -34,7 +34,7 @@ endif()
 
 
 include_directories(${Boost_INCLUDE_DIRS})
-include_directories("include/glm" "include/imgui" "include/CDT" "include/stk")
+include_directories("include/glm" "include/imgui" "include/CDT" "include/stk" "include/oscpp")
 include_directories(${CMAKE_CURRENT_SOURCE_DIR})
 if(WIN32)
     include_directories(${OPENGL_INCLUDE_DIRS} ${SDL2_INCLUDE_DIR})
@@ -59,11 +59,9 @@ set(destinationName "${CMAKE_CURRENT_BINARY_DIR}/${CMAKE_BUILD_TYPE}")
 message("Copy files to where .exe is located at \"${destinationName}\"")
 
 if(WIN32)
-    add_executable(ManyLands ${GUI_TYPE} ${CPP_FILES} ${GL3W_FILES} ${IMGUI_FILES} ${H_FILES} ${SHADERS_FILES}
-            src/Audio.cpp)
+    add_executable(ManyLands ${GUI_TYPE} ${CPP_FILES} ${GL3W_FILES} ${IMGUI_FILES} ${H_FILES} ${SHADERS_FILES})
 else()
-    add_executable(ManyLands ${GUI_TYPE} ${CPP_FILES} ${IMGUI_FILES} ${H_FILES} ${SHADERS_FILES}
-            src/Audio.cpp)
+    add_executable(ManyLands ${GUI_TYPE} ${CPP_FILES} ${IMGUI_FILES} ${H_FILES} ${SHADERS_FILES})
 endif()
 
 source_group("imgui" FILES ${IMGUI_FILES})
@@ -76,6 +74,7 @@ endif()
 # stk library
 add_subdirectory(${STK_DIR} ${STK_BINARY_DIR})
 target_link_libraries(ManyLands stk)
+
 
 if(EMSCRIPTEN)
     # Emscripten

@@ -7,6 +7,7 @@
 #include "RtAudio.h"
 #include "SineWave.h"
 
+
 int tick( void *outputBuffer, void *inputBuffer, unsigned int nBufferFrames,
           double streamTime, RtAudioStreamStatus status, void *dataPointer )
 {
@@ -21,7 +22,7 @@ int tick( void *outputBuffer, void *inputBuffer, unsigned int nBufferFrames,
     return 0;
 }
 
-int Audio::initStream(TickData* userData) {
+void Audio::initStream(TickData* userData) {
     stk::Stk::setSampleRate( 44100.0 );
     // Figure out how many bytes in an StkFloat and setup the RtAudio stream.
     RtAudio::StreamParameters parameters;
@@ -38,9 +39,7 @@ int Audio::initStream(TickData* userData) {
                          &tick,
                          userData ) ) {
         std::cout << dac_->getErrorText() << std::endl;
-        return 0;
     }
-    return 0;
 }
 
 void Audio::startStream() {
@@ -64,6 +63,19 @@ void Audio::stopStream() {
 void Audio::closeStream() {
     dac_->closeStream();
     isPlayingSound = false;
+}
+
+void TickData::setFrequencyFromSpeed(float speed, float min, float max) {
+    //float percentage = (speed - min) / (max - min);
+
+    float percentage = (speed - min) / (max - min);
+    frequency = exp(percentage * (log(MAX_FREQ) - log(MIN_FREQ)) + log(MIN_FREQ));
+
+
+//    float midiNote = percentage * (MAX_MIDI - MIN_MIDI) + MIN_MIDI;
+//    float newFrequency = pow(2.0f, (midiNote -69.0f) / 12.0f) * 440.0f;
+//    frequency = newFrequency;
+
 }
 
 

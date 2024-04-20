@@ -46,10 +46,12 @@
 #include "Audio.h"
 #include "Mandolin.h"
 #include "Whistle.h"
+#include "TubeBell.h"
 
 // Boost
 #include <boost/numeric/ublas/assignment.hpp>
 
+#include <oscpp/client.hpp>
 //#define DEBUG
 
 #if defined(USE_GL_ES3)
@@ -958,12 +960,17 @@ int main(int, char**)
 #else
     Last_timepoint = std::chrono::system_clock::now();
 
-    stk::SineWave sine;
-    instrumentData.sine = &sine;
     stk::Stk::setRawwavePath("rawwaves");
+
+    //stk::TubeBell bell;
+    stk::SineWave sine;
+    //instrumentData.instrument = &bell;
+    instrumentData.sine = &sine;
     audio.initStream(&instrumentData);
     audio.setTickData(&instrumentData);
     instrumentData.frequency = 440.0;
+
+
 
     // Main loop
     while(!done)
