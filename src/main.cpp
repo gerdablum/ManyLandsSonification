@@ -796,11 +796,11 @@ void mainloop()
         instrumentData.setFrequencyFromSpeed(speed, minSpeed, maxSpeed);
     }
     if (Is_player_active && !isAudioPlaying) {
-        audio.startStream();
+        audio.startPlayingAudio();
         isAudioPlaying = true;
         //State
     } else if (!Is_player_active && isAudioPlaying) {
-        audio.stopStream();
+        audio.stopPlayingAudio();
         isAudioPlaying = false;
     }
 }
@@ -963,9 +963,11 @@ int main(int, char**)
     stk::Stk::setRawwavePath("rawwaves");
 
     //stk::TubeBell bell;
-    stk::SineWave sine;
+    stk::SineWave sine1;
+    stk::SineWave sine2;
     //instrumentData.instrument = &bell;
-    instrumentData.sine = &sine;
+    instrumentData.sines[0] = &sine1;
+    instrumentData.sines[1] = &sine2;
     audio.initStream(&instrumentData);
     audio.setTickData(&instrumentData);
     instrumentData.frequency = 440.0;
