@@ -16,24 +16,23 @@
 
 class TickData {
 public:
-    stk::Instrmnt* instrument;
-    stk::SineWave* sines[2];
-    stk::StkFloat frequency;
+    std::vector<stk::SineWave*> sines;
+    std::vector<float> overtoneSteps;
+    std::vector<float> overToneLoudness;
+    stk::StkFloat fundamentalFrequency;
     stk::StkFloat scaler;
     stk::ADSR envelope;
-    long counter;
-    bool done;
 
-    void setFrequencyFromSpeed(float speed, float min, float max);
+    void setFundamentalFrequencyFromSpeed(float speed, float min, float max);
     float calcMidiFromFrequency(float freq);
     float calcFrequencyFromMidi(float midi);
+    void initSines(int noOfSines);
 
     // Default constructor.
     TickData()
-            : instrument(nullptr), sines(), frequency(440.0), scaler(1.0), envelope(), counter(0), done(false ) {
+            : sines(), fundamentalFrequency(440.0), scaler(1.0), envelope() {
         minFreq = 200;
         maxFreq = 1000;
-
         minMidi = calcMidiFromFrequency(minFreq);
         maxMidi = calcMidiFromFrequency(maxFreq);
     }
@@ -43,7 +42,6 @@ private:
 
     float minMidi;
     float maxMidi;
-
 };
 
 class Audio {

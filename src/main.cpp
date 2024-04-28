@@ -68,6 +68,7 @@
 #endif
 #endif
 #include <string>
+#include <fstream>
 
 namespace
 {
@@ -786,14 +787,13 @@ void mainloop()
     if (curve) {
         //Timeline.get_log_curve_speed(State->curve_selection, curve);
         // c.t_min() + state_->timeplayer_pos * c.t_duration()
-
         auto speeds = curve->get_stats().speed;
         auto minSpeed = curve->get_stats().min_speed;
         auto maxSpeed = curve->get_stats().max_speed;
 
         float time = curve->t_min() +  State->timeplayer_pos * curve->t_duration();
         auto speed = speeds[curve->get_index(time)];
-        instrumentData.setFrequencyFromSpeed(speed, minSpeed, maxSpeed);
+        instrumentData.setFundamentalFrequencyFromSpeed(speed, minSpeed, maxSpeed);
     }
     if (Is_player_active && !isAudioPlaying) {
         audio.startPlayingAudio();
@@ -962,15 +962,13 @@ int main(int, char**)
 
     stk::Stk::setRawwavePath("rawwaves");
 
-    //stk::TubeBell bell;
-    stk::SineWave sine1;
-    stk::SineWave sine2;
-    //instrumentData.instrument = &bell;
-    instrumentData.sines[0] = &sine1;
-    instrumentData.sines[1] = &sine2;
+    instrumentData.initSines(6);
+    instrumentData.overtoneSteps.insert( instrumentData.overtoneSteps.end(), { 1, 4, 10, 11, 12, 15 });
+    instrumentData.overToneLoudness.insert( instrumentData.overToneLoudness.end(), { 1, 0.3, 0.1, 0.023, 0.021, 0.018 });
+    instrumentData.scaler = 0.4;
     audio.initStream(&instrumentData);
     audio.setTickData(&instrumentData);
-    instrumentData.frequency = 440.0;
+    instrumentData.fundamentalFrequency = 440.0;
 
 
 

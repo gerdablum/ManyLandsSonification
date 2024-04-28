@@ -11,16 +11,33 @@
 int tick( void *outputBuffer, void *inputBuffer, unsigned int nBufferFrames,
           double streamTime, RtAudioStreamStatus status, void *dataPointer )
 {
+    // TODO assertions with vector sizes in TickData
     auto *data = (TickData *) dataPointer;
-    stk::SineWave *sine1 = data->sines[0];
-    stk::SineWave *sine2 = data->sines[1];
-    sine1->setFrequency(data->frequency);
-    float midi = data->calcMidiFromFrequency(data->frequency);
-    float midiSine2 = midi + 7;
-    sine2->setFrequency(data->calcFrequencyFromMidi(midiSine2));
+    int numberOfTones = data->overtoneSteps.size();
+
+
+    /*for (int i = 0; i < data->overtoneSteps.size(); i++) {
+
+    }*/
+
+    auto sines = data->sines;
+    float midi = data->calcMidiFromFrequency(data->fundamentalFrequency);
+
+    for (int j = 0; j < numberOfTones; j++) {
+        float midiSine = midi + data->overtoneSteps[j];
+        data->sines[j]->setFrequency(data->calcFrequencyFromMidi(midiSine));
+    }
+
+
     stk::StkFloat *samples = (stk::StkFloat *) outputBuffer;
     for ( unsigned int i=0; i<nBufferFrames; i++ ) {
-        *samples++ = (sine1->tick() * 0.5 + sine2->tick() * 0.5) * data->envelope.tick();
+        stk::StkFloat sample = 0;
+        for (int k = 0; k < numberOfTones; k++) {
+            sample += sines[k]->tick() * data->overToneLoudness[k];
+        }
+        *samples++ = sample
+                * data->scaler
+                * data->envelope.tick();
     }
 
     return 0;
@@ -79,11 +96,10 @@ void Audio::closeStream() {
     isPlayingSound = false;
 }
 
-void TickData::setFrequencyFromSpeed(float speed, float min, float max) {
-    //float percentage = (speed - min) / (max - min);
+void TickData::setFundamentalFrequencyFromSpeed(float speed, float min, float max) {
 
     float percentage = (speed - min) / (max - min);
-    frequency = exp(percentage * (log(this->maxFreq) - log(this->minFreq)) + log(this->minFreq));
+    fundamentalFrequency = exp(percentage * (log(this->maxFreq) - log(this->minFreq)) + log(this->minFreq));
 
 
 //    float midiNote = percentage * (MAX_MIDI - MIN_MIDI) + MIN_MIDI;
@@ -98,6 +114,18 @@ float TickData::calcMidiFromFrequency(float freq) {
 
 float TickData::calcFrequencyFromMidi(float midi) {
     return pow(2.0f, (midi -69.0f) / 12.0f) * 440.0f;
+}
+
+void TickData::initSines(int noOfSines) {
+    // delete element before new initialization to ensure vector does not get longer every time
+    for (auto ptr : sines) {
+        delete ptr;
+    }
+    sines.clear();
+    for (int i = 0; i < noOfSines; i++) {
+        stk::SineWave* sine = new stk::SineWave();
+        sines.push_back(sine);
+    }
 }
 
 
