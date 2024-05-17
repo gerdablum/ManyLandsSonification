@@ -12,6 +12,7 @@
 #include "RtWvOut.h"
 #include "Instrmnt.h"
 #include "ADSR.h"
+#include "FreeVerb.h"
 
 
 class TickData {
@@ -47,7 +48,7 @@ private:
 class Audio {
 
 public:
-    Audio(RtAudio* dac): dac_(dac) {}
+    Audio(RtAudio* dac): dac_(dac), userData_() {}
     bool isPlayingSound = false;
 
     void initStream(TickData* userData);

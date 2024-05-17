@@ -16,9 +16,9 @@ int tick( void *outputBuffer, void *inputBuffer, unsigned int nBufferFrames,
     int numberOfTones = data->overtoneSteps.size();
 
 
-    /*for (int i = 0; i < data->overtoneSteps.size(); i++) {
-
-    }*/
+    /*const StkFrames& samples = effect->lastFrame();
+    *oSamples++ = data->envelope.tick() * samples[0];
+    *oSamples++ = data->envelope.lastOut() * samples[1];*/
 
     auto sines = data->sines;
     float midi = data->calcMidiFromFrequency(data->fundamentalFrequency);
@@ -32,12 +32,16 @@ int tick( void *outputBuffer, void *inputBuffer, unsigned int nBufferFrames,
     stk::StkFloat *samples = (stk::StkFloat *) outputBuffer;
     for ( unsigned int i=0; i<nBufferFrames; i++ ) {
         stk::StkFloat sample = 0;
+        //const stk::StkFrames& effectSamples = effect->lastFrame();
         for (int k = 0; k < numberOfTones; k++) {
             sample += sines[k]->tick() * data->overToneLoudness[k];
         }
         *samples++ = sample
                 * data->scaler
-                * data->envelope.tick();
+                * data->envelope.tick(); /* * effectSamples[0];
+        *samples++ = sample
+                     * data->scaler
+                     * data->envelope.lastOut() * effectSamples[1];*/
     }
 
     return 0;
@@ -47,7 +51,6 @@ void Audio::initStream(TickData* userData) {
     if (this->isStreamOpen) {
         dac_->closeStream();
     }
-    stk::Stk::setSampleRate( 44100.0 );
     RtAudio::StreamParameters outputParameters;
     outputParameters.deviceId = dac_->getDefaultOutputDevice();
     outputParameters.nChannels = 1;

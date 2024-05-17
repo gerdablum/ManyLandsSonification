@@ -47,6 +47,7 @@
 #include "Mandolin.h"
 #include "Whistle.h"
 #include "TubeBell.h"
+#include "TwoPole.h"
 
 // Boost
 #include <boost/numeric/ublas/assignment.hpp>
@@ -792,7 +793,14 @@ void mainloop()
         auto maxSpeed = curve->get_stats().max_speed;
 
         float time = curve->t_min() +  State->timeplayer_pos * curve->t_duration();
-        auto speed = speeds[curve->get_index(time)];
+
+        int idx = curve->get_index(time);
+        auto timeStampCurr = curve->time_stamp()[idx];
+        auto timeStampNext = curve->time_stamp()[(idx+1) % curve->time_stamp().size()];
+        float t = (time - timeStampCurr) / (timeStampNext - timeStampCurr);
+        auto currSpeed = speeds[idx];
+        auto prevSpeed = speeds[(idx + 1) % speeds.size()];
+        auto speed = prevSpeed * (t) + currSpeed * (1 - t);
         instrumentData.setFundamentalFrequencyFromSpeed(speed, minSpeed, maxSpeed);
     }
     if (Is_player_active && !isAudioPlaying) {
@@ -961,15 +969,16 @@ int main(int, char**)
     Last_timepoint = std::chrono::system_clock::now();
 
     stk::Stk::setRawwavePath("rawwaves");
-
+    stk::Stk::setSampleRate( 44100.0 );
+    stk::Stk::showWarnings(true);
     instrumentData.initSines(6);
-    instrumentData.overtoneSteps.insert( instrumentData.overtoneSteps.end(), { 1, 4, 10, 11, 12, 15 });
-    instrumentData.overToneLoudness.insert( instrumentData.overToneLoudness.end(), { 1, 0.3, 0.1, 0.023, 0.021, 0.018 });
+    instrumentData.overtoneSteps.insert( instrumentData.overtoneSteps.end(), { 0, 3, 7, 12});
+    instrumentData.overToneLoudness.insert( instrumentData.overToneLoudness.end(), {0.2, 0.2, 0.2, 0.2 });
     instrumentData.scaler = 0.4;
     audio.initStream(&instrumentData);
     audio.setTickData(&instrumentData);
     instrumentData.fundamentalFrequency = 440.0;
-
+    dac.closeStream();
 
 
     // Main loop
