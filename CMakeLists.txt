@@ -3,7 +3,8 @@ project (ManyLands)
 
 set(CMAKE_CXX_STANDARD 17)
 if(WIN32)
-    set(GUI_TYPE WIN32)
+    set(GUI_TYPE WIN32
+            src/OscpController.h)
     set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} /SUBSYSTEM:WINDOWS /ENTRY:mainCRTStartup")
 endif()
 

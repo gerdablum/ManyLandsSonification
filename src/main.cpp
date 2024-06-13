@@ -5,6 +5,10 @@
 // Win
 #ifdef _WIN32
 #define GLFW_EXPOSE_NATIVE_WIN32
+
+// winsock2 should be included before winsock1 otherwise it gives weird errors
+#include <winsock2.h>
+
 #include <windows.h>
 #include <commdlg.h>
 #endif
@@ -12,6 +16,7 @@
 #include "imgui.h"
 #include "imgui_impl_sdl.h"
 #include "imgui_impl_opengl3.h"
+
 // SDL
 #include <SDL.h>
 #include <SDL_syswm.h>
@@ -48,6 +53,7 @@
 #include "Whistle.h"
 #include "TubeBell.h"
 #include "TwoPole.h"
+#include "OscpController.h"
 
 // Boost
 #include <boost/numeric/ublas/assignment.hpp>
@@ -116,6 +122,7 @@ Scene Scene_objs(State);
 RtAudio dac;
 Audio audio(&dac);
 TickData instrumentData;
+OscpController oscpController;
 bool isAudioPlaying = false;
 
 Base_renderer::Region Scene_region, Timeline_region;
@@ -437,6 +444,16 @@ void mainloop()
         ImGui::SameLine();
         ImGui::Checkbox("Scale tesseract", &State->scale_tesseract);
 
+        if (ImGui::CollapsingHeader("Audio")) {
+            ImGui::Checkbox("Enable audio", &State->is_audio_enabled);
+            if (State->is_audio_enabled) {
+                ImGui::Checkbox("Use OSCP instead of built in sound", &State->is_oscp_active);
+                ImGui::SliderFloat("Min. frequency", &State->min_freq, 200.0f, 800.0f);
+                ImGui::SliderFloat("Max. frequency", &State->max_freq, 200.0f, 800.0f);
+            }
+
+
+        }
         if (ImGui::CollapsingHeader("Player"))
         {
             static auto time(0.f);
@@ -779,12 +796,12 @@ void mainloop()
     Timeline.render();
     Text_ren->render(width, height);
     ImGui::Render();
-
     ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
     SDL_GL_SwapWindow(MainWindow);
 
     // Audio
     auto curve = State->selected_curve();
+    instrumentData.updateMinMaxFrequency(State->min_freq, State->max_freq);
     if (curve) {
         //Timeline.get_log_curve_speed(State->curve_selection, curve);
         // c.t_min() + state_->timeplayer_pos * c.t_duration()
@@ -797,18 +814,43 @@ void mainloop()
         int idx = curve->get_index(time);
         auto timeStampCurr = curve->time_stamp()[idx];
         auto timeStampNext = curve->time_stamp()[(idx+1) % curve->time_stamp().size()];
-        float t = (time - timeStampCurr) / (timeStampNext - timeStampCurr);
         auto currSpeed = speeds[idx];
-        auto prevSpeed = speeds[(idx + 1) % speeds.size()];
-        auto speed = prevSpeed * (t) + currSpeed * (1 - t);
+        auto nextSpeed = speeds[(idx + 1) % speeds.size()];
+        float t = (time - timeStampCurr) / (timeStampNext - timeStampCurr);
+        auto speed = nextSpeed * t + currSpeed * (1 - t);
+        auto delta_t = timeStampNext - timeStampCurr;
+        auto delta_v = nextSpeed - currSpeed;
+        float acceleration = 0;
+        if (delta_t != 0) {
+            acceleration = (delta_v / delta_t) * 10;
+            std::cout << acceleration << std::endl;
+        }
+        //instrumentData.setFundamentalFrequencyFromSpeed(minSpeed + (maxSpeed - minSpeed) /2 + acceleration, minSpeed, maxSpeed);
         instrumentData.setFundamentalFrequencyFromSpeed(speed, minSpeed, maxSpeed);
+
+        if (isAudioPlaying) {
+            char sendBuffer[512];
+            if (State->is_oscp_active) {
+                oscpController.sendFrequencyChange(instrumentData.fundamentalFrequency, &sendBuffer, std::size(sendBuffer));
+            }
+        }
     }
-    if (Is_player_active && !isAudioPlaying) {
-        audio.startPlayingAudio();
+    if (Is_player_active && !isAudioPlaying && State->is_audio_enabled) {
+        if (State->is_oscp_active) {
+            char sendBuffer[512];
+            oscpController.sendStartMessage(&sendBuffer, std::size(sendBuffer));
+
+        } else {
+            audio.startPlayingAudio();
+        }
         isAudioPlaying = true;
-        //State
-    } else if (!Is_player_active && isAudioPlaying) {
-        audio.stopPlayingAudio();
+    } else if (!Is_player_active && isAudioPlaying && State->is_audio_enabled) {
+        if (State->is_oscp_active) {
+            char sendBuffer[512];
+            oscpController.sendStopMessage(&sendBuffer, std::size(sendBuffer));
+        } else {
+            audio.stopPlayingAudio();
+        }
         isAudioPlaying = false;
     }
 }
@@ -978,8 +1020,8 @@ int main(int, char**)
     audio.initStream(&instrumentData);
     audio.setTickData(&instrumentData);
     instrumentData.fundamentalFrequency = 440.0;
-    dac.closeStream();
 
+    oscpController.start();
 
     // Main loop
     while(!done)

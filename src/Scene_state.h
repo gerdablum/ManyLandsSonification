@@ -69,6 +69,12 @@ public:
 
     std::array<float, 4> tesseract_size;
 
+    //Audio
+    bool is_audio_enabled = false;
+    bool is_oscp_active = false;
+    float min_freq = 200.0f;
+    float max_freq = 700.0f;
+
 private:
     std::map<std::int32_t, Color> colors_;
     std::vector<Color> curve_colors_;

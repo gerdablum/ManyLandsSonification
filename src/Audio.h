@@ -33,10 +33,13 @@ public:
     TickData()
             : sines(), fundamentalFrequency(440.0), scaler(1.0), envelope() {
         minFreq = 200;
-        maxFreq = 1000;
+        maxFreq = 700;
         minMidi = calcMidiFromFrequency(minFreq);
         maxMidi = calcMidiFromFrequency(maxFreq);
     }
+
+    void updateMinMaxFrequency(float minFrequency, float maxFrequency);
+
 private:
     float minFreq;
     float maxFreq;

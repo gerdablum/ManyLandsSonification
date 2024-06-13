@@ -131,4 +131,11 @@ void TickData::initSines(int noOfSines) {
     }
 }
 
+void TickData::updateMinMaxFrequency(float minFrequency, float maxFrequency) {
+    this->minFreq = minFrequency;
+    this->maxFreq = maxFrequency;
+    this->minMidi = this->calcMidiFromFrequency(minFrequency);
+    this->maxMidi = this->calcMidiFromFrequency(maxFrequency);
+}
+
 
