@@ -15,6 +15,9 @@
 #include "FreeVerb.h"
 
 
+const static float MIN_FREQ_RANGE = 100.0f;
+const static float MAX_FREQ_RANGE = 900.0f;
+
 class TickData {
 public:
     std::vector<stk::SineWave*> sines;
@@ -33,7 +36,7 @@ public:
     TickData()
             : sines(), fundamentalFrequency(440.0), scaler(1.0), envelope() {
         minFreq = 200;
-        maxFreq = 700;
+        maxFreq = 800;
         minMidi = calcMidiFromFrequency(minFreq);
         maxMidi = calcMidiFromFrequency(maxFreq);
     }

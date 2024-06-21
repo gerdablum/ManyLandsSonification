@@ -110,12 +110,14 @@ const std::shared_ptr<Scene_state> State = std::make_shared<Scene_state>();
 Scene_renderer Renderer(State);
 Timeline_renderer Timeline(State);
 
+
 const std::shared_ptr<Diffuse_shader> Diffuse_shad =
     std::make_shared<Diffuse_shader>();
 const std::shared_ptr<Screen_shader> Screen_shad =
     std::make_shared<Screen_shader>();
 const std::shared_ptr<Text_renderer> Text_ren =
     std::make_shared<Text_renderer>();
+
 
 Scene Scene_objs(State);
 
@@ -124,6 +126,7 @@ Audio audio(&dac);
 TickData instrumentData;
 OscpController oscpController;
 bool isAudioPlaying = false;
+const char* prevDimensionality = "";
 
 Base_renderer::Region Scene_region, Timeline_region;
 Base_renderer::Renderer_io Previous_io;
@@ -448,8 +451,15 @@ void mainloop()
             ImGui::Checkbox("Enable audio", &State->is_audio_enabled);
             if (State->is_audio_enabled) {
                 ImGui::Checkbox("Use OSCP instead of built in sound", &State->is_oscp_active);
-                ImGui::SliderFloat("Min. frequency", &State->min_freq, 200.0f, 800.0f);
-                ImGui::SliderFloat("Max. frequency", &State->max_freq, 200.0f, 800.0f);
+                ImGui::SliderFloat("Min. frequency", &State->min_freq, MIN_FREQ_RANGE, MAX_FREQ_RANGE);
+                ImGui::SliderFloat("Max. frequency", &State->max_freq, MIN_FREQ_RANGE, MAX_FREQ_RANGE);
+
+                ImGui::Separator();
+                ImGui::Text("Sonification data selection:");
+                const char* items[] = {"speed", "acceleration"};
+                static int item_current = 0;
+                ImGui::Combo("choose data", &item_current, items, IM_ARRAYSIZE(items));
+                State->active_sonification_data = static_cast<Scene_state::SonificationData>(item_current);
             }
 
 
@@ -769,11 +779,13 @@ void mainloop()
                                       static_cast<float>(height));
 
     // Draw separator
-    glUseProgram(Screen_shad->program_id);
+    //TODO separator causes memory leak!
+    /*glUseProgram(Screen_shad->program_id);
     glUniformMatrix4fv(Screen_shad->proj_mat_id,
                        1,
                        GL_FALSE,
                        glm::value_ptr(proj_ortho));
+
     Screen_shader::Screen_geometry separator;
     Screen_shader::Line_strip line;
     line.emplace_back(Screen_shader::Line_point(
@@ -787,7 +799,7 @@ void mainloop()
     Screen_shad->append_to_geometry(separator, line);
 
     separator.init_buffers();
-    Screen_shad->draw_geometry(separator);
+    Screen_shad->draw_geometry(separator);*/
 
     // Draw other objects
     Text_ren->clear();
@@ -803,35 +815,33 @@ void mainloop()
     auto curve = State->selected_curve();
     instrumentData.updateMinMaxFrequency(State->min_freq, State->max_freq);
     if (curve) {
-        //Timeline.get_log_curve_speed(State->curve_selection, curve);
-        // c.t_min() + state_->timeplayer_pos * c.t_duration()
-        auto speeds = curve->get_stats().speed;
+
         auto minSpeed = curve->get_stats().min_speed;
         auto maxSpeed = curve->get_stats().max_speed;
-
         float time = curve->t_min() +  State->timeplayer_pos * curve->t_duration();
 
-        int idx = curve->get_index(time);
-        auto timeStampCurr = curve->time_stamp()[idx];
-        auto timeStampNext = curve->time_stamp()[(idx+1) % curve->time_stamp().size()];
-        auto currSpeed = speeds[idx];
-        auto nextSpeed = speeds[(idx + 1) % speeds.size()];
-        float t = (time - timeStampCurr) / (timeStampNext - timeStampCurr);
-        auto speed = nextSpeed * t + currSpeed * (1 - t);
-        auto delta_t = timeStampNext - timeStampCurr;
-        auto delta_v = nextSpeed - currSpeed;
-        float acceleration = 0;
-        if (delta_t != 0) {
-            acceleration = (delta_v / delta_t) * 10;
-            std::cout << acceleration << std::endl;
+        float value = 0;
+        if (State->active_sonification_data == Scene_state::SonificationData::SPEED) {
+            value = curve->get_interpolated_speed_at(time);
+            instrumentData.setFundamentalFrequencyFromSpeed(value, curve->get_stats().min_speed, curve->get_stats().max_speed);
+        } else if (State->active_sonification_data == Scene_state::SonificationData::ACC) {
+            value = curve->get_interpolated_acceleration_at(time);
+            instrumentData.setFundamentalFrequencyFromSpeed(value, curve->get_stats().min_acceleration, curve->get_stats().max_acceleration);
+
+            std::cout << "acceleration: " + std::to_string(value)  +  " maps to frequency: "
+            + std::to_string(instrumentData.fundamentalFrequency) << std::endl;
         }
-        //instrumentData.setFundamentalFrequencyFromSpeed(minSpeed + (maxSpeed - minSpeed) /2 + acceleration, minSpeed, maxSpeed);
-        instrumentData.setFundamentalFrequencyFromSpeed(speed, minSpeed, maxSpeed);
+
+        auto dimens = curve->get_dimensionality_at(time);
 
         if (isAudioPlaying) {
-            char sendBuffer[512];
+
             if (State->is_oscp_active) {
+                char sendBuffer[512];
+                char sendBuffer2[512];
                 oscpController.sendFrequencyChange(instrumentData.fundamentalFrequency, &sendBuffer, std::size(sendBuffer));
+                oscpController.checkAndSendDimensionalityChange(prevDimensionality, dimens.c_str(), &sendBuffer2, std::size(sendBuffer));
+                prevDimensionality = dimens.c_str();
             }
         }
     }

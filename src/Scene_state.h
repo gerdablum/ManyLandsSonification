@@ -70,10 +70,12 @@ public:
     std::array<float, 4> tesseract_size;
 
     //Audio
+    enum SonificationData {SPEED, ACC, DIMENS};
     bool is_audio_enabled = false;
     bool is_oscp_active = false;
     float min_freq = 200.0f;
     float max_freq = 700.0f;
+    SonificationData active_sonification_data = SPEED;
 
 private:
     std::map<std::int32_t, Color> colors_;

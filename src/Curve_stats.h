@@ -32,8 +32,10 @@ struct Curve_stats
     };
 
     float min_speed, max_speed;
-    // These two vectors should be of the size of the curve (number of points)
+    float min_acceleration, max_acceleration;
+    // These three vectors should be of the size of the curve (number of points)
     std::vector<float> speed;
+    std::vector<float> acceleration;
     std::vector<std::string> dimensionality;
     // Vectors bellow have the size depending from number of switches
     std::vector<size_t> switches_inds;

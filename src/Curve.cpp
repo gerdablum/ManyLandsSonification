@@ -12,6 +12,7 @@
 #include <boost/geometry.hpp>
 #include <boost/geometry/geometries/linestring.hpp>
 #include <boost/geometry/geometries/point.hpp>
+#include <fstream>
 
 const Color Curve::default_color_ = Color(0, 0, 0, 255);
 
@@ -234,6 +235,27 @@ void Curve::calculate_general_stats(
     stats_.min_speed = min_speed;
     stats_.max_speed = max_speed;
 
+
+    // calculate acceleration
+    float min_acc = 0;
+    float max_acc = 0;
+    for (int k = 0; k < stats_.speed.size(); k++) {
+        float s1 = stats_.speed[k];
+        float s2 = stats_.speed[(k + 1) % stats_.speed.size()];
+
+        auto delta_t = this->time_stamp()[(k + 1) % this->time_stamp().size()] - this->time_stamp()[k];
+        auto delta_v = s2 - s1;
+        float acc = delta_v / delta_t;
+        min_acc = std::min(acc, min_acc);
+        max_acc = std::max(acc, max_acc);
+
+        stats_.acceleration.push_back(acc);
+    }
+
+    stats_.min_acceleration = min_acc;
+    stats_.max_acceleration = max_acc;
+
+    //writeToFile(stats_.speed, "C:/Users/Alina/Master-Projects/4D-sonification/manylands-models/speed.txt");
     Scene_vertex_t origin, size;
     get_boundaries(origin, size);
     auto abs_max_movement = max_movement * size;
@@ -317,6 +339,8 @@ void Curve::calculate_general_stats(
 
     if(stats_.switches_inds.size() > 0)
         compute_range(stats_.switches_inds.back(), vertices_.size());
+
+
 }
 
 //******************************************************************************
@@ -432,4 +456,48 @@ Curve::get_markers(const Curve_selection& selection)
     }
 
     return res;
+}
+
+float Curve::get_interpolated_speed_at(float time) {
+    int idx = this->get_index(time);
+    auto speeds = this->get_stats().speed;
+    auto timeStampCurr = this->time_stamp()[idx];
+    auto timeStampNext = this->time_stamp()[(idx+1) % this->time_stamp().size()];
+    auto currSpeed = speeds[idx];
+    auto nextSpeed = speeds[(idx + 1) % speeds.size()];
+    float t = (time - timeStampCurr) / (timeStampNext - timeStampCurr);
+    return nextSpeed * t + currSpeed * (1 - t);
+}
+
+float Curve::get_interpolated_acceleration_at(float time) {
+
+    auto accs = this->get_stats().acceleration;
+
+    int idx = this->get_index(time);
+    auto timeStampCurr = this->time_stamp()[idx];
+    auto timeStampNext = this->time_stamp()[(idx+1) % this->time_stamp().size()];
+    auto accCur = accs[idx];
+    auto accNext = accs[(idx + 1) % accs.size()];
+    float t = (time - timeStampCurr) / (timeStampNext - timeStampCurr);
+    return accNext * t + accCur * (1 - t);
+}
+
+std::basic_string<char> Curve::get_dimensionality_at(float time) {
+    int idx = this->get_index(time);
+    auto dimens = this->get_stats().dimensionality;
+    return dimens[idx];
+}
+
+
+void Curve::writeToFile(const std::vector<float>& vec, const char *filename) {
+    std::ofstream outFile(filename);
+
+    if (outFile.is_open()) {
+        for (float value : vec) {
+            outFile << value << std::endl;
+        }
+        outFile.close();
+    } else {
+        std::cerr << "Unable to open file: " << filename << std::endl;
+    }
 }

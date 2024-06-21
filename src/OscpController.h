@@ -38,9 +38,12 @@ public:
     void sendStartMessage(void* buffer, int size);
     void sendStopMessage(void* buffer, int size);
     void sendFrequencyChange(float frequency, void* buffer, int size);
+    void checkAndSendDimensionalityChange(const char* prevDimens, const char* currDimens, void* buffer, int size);
 
 private:
     void send(const void *buffer, const OSCPP::Client::Packet &packet) const;
+
+    void convert_dimensions(const char *prevDimens, int *prevDimensions) const;
 };
 
 

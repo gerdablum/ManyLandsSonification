@@ -49,14 +49,26 @@ Geometry_engine<TArray_data>::Geometry_engine()
 template<class TArray_data>
 Geometry_engine<TArray_data>::~Geometry_engine()
 {
-    glDeleteBuffers(1, &array_buff_id);
-    glDeleteBuffers(1, &index_buff_id);
+    if (glIsBuffer(array_buff_id)) {
+        glDeleteBuffers(1, &array_buff_id);
+    }
+    if (glIsBuffer(index_buff_id)) {
+        glDeleteBuffers(1, &index_buff_id);
+    }
 }
 
 template<class TArray_data>
 void Geometry_engine<TArray_data>::init_buffers()
 {
     // Allocating buffers
+
+    if (glIsBuffer(array_buff_id)) {
+        return;
+    }
+    if (glIsBuffer(index_buff_id)) {
+        return;
+    }
+
     glBindBuffer(GL_ARRAY_BUFFER, array_buff_id);
     glBufferData(
         GL_ARRAY_BUFFER,

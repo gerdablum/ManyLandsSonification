@@ -36,6 +36,9 @@ public:
 
     std::vector<Curve_annotations> get_arrows(const Curve_selection& selection);
     std::vector<Scene_vertex_t> get_markers(const Curve_selection& selection);
+    float get_interpolated_speed_at(float time);
+    float get_interpolated_acceleration_at(float time);
+    std::basic_string<char> get_dimensionality_at(float time);
 
 private:
     void calculate_general_stats(
@@ -52,4 +55,6 @@ private:
     std::vector<size_t>     markers_;
 
     const static Color default_color_;
+
+    void writeToFile(const std::vector<float>& vec, const char *filename);
 };
