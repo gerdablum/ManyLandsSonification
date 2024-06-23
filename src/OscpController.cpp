@@ -80,7 +80,7 @@ void OscpController::sendFrequencyChange(float frequency, void *buffer, int size
     send(buffer, packet);
 }
 
-void OscpController::checkAndSendDimensionalityChange(const char* prevDimens, const char* currDimens, void *buffer,
+void OscpController::checkAndSendDimensionalityChange(std::string prevDimens, std::string currDimens, void *buffer,
                                                       int size) {
     if (prevDimens == currDimens) {
         return;
@@ -88,33 +88,27 @@ void OscpController::checkAndSendDimensionalityChange(const char* prevDimens, co
     int prevDimensInBinary[] = {0, 0, 0, 0};
     int currDimensInBinary[]  = {0, 0, 0, 0};
 
-    convert_dimensions(prevDimens, prevDimensInBinary);
-    convert_dimensions(currDimens, currDimensInBinary);
+    convert_dimensions(prevDimens.c_str(), prevDimensInBinary);
+    convert_dimensions(currDimens.c_str(), currDimensInBinary);
     const auto p1 = std::chrono::system_clock::now();
     auto timestamp = std::chrono::duration_cast<std::chrono::seconds>(
             p1.time_since_epoch()).count();
 
     OSCPP::Client::Packet packet(buffer, size);
     packet.openBundle(timestamp)
-            .openMessage("/s_dimensionality_change",  OSCPP::Tags::array(8) * 2)
+            .openMessage("/s_dimensionality_change",  2 + OSCPP::Tags::array(4) * 2)
+                .string("old_value")
                 .openArray()
-                    .string("x")
                     .int32(prevDimensInBinary[0])
-                    .string("y")
                     .int32(prevDimensInBinary[1])
-                    .string("z")
                     .int32(prevDimensInBinary[2])
-                    .string("w")
                     .int32(prevDimensInBinary[3])
                 .closeArray()
+                .string("new_value")
                 .openArray()
-                    .string("x")
                     .int32(currDimensInBinary[0])
-                    .string("y")
                     .int32(currDimensInBinary[1])
-                    .string("z")
                     .int32(currDimensInBinary[2])
-                    .string("w")
                     .int32(currDimensInBinary[3])
                 .closeArray()
             .closeMessage()
@@ -123,7 +117,7 @@ void OscpController::checkAndSendDimensionalityChange(const char* prevDimens, co
     send(buffer, packet);
 }
 
-void OscpController::convert_dimensions(const char *prevDimens, int *prevDimensions) const {
+void OscpController::convert_dimensions(const char *prevDimens, int *prevDimensions) {
     if (strchr(prevDimens, 'x')) {
         prevDimensions[0] = 1;
     }

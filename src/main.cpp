@@ -126,7 +126,7 @@ Audio audio(&dac);
 TickData instrumentData;
 OscpController oscpController;
 bool isAudioPlaying = false;
-const char* prevDimensionality = "";
+std::string prevDimensionality = "";
 
 Base_renderer::Region Scene_region, Timeline_region;
 Base_renderer::Renderer_io Previous_io;
@@ -827,9 +827,6 @@ void mainloop()
         } else if (State->active_sonification_data == Scene_state::SonificationData::ACC) {
             value = curve->get_interpolated_acceleration_at(time);
             instrumentData.setFundamentalFrequencyFromSpeed(value, curve->get_stats().min_acceleration, curve->get_stats().max_acceleration);
-
-            std::cout << "acceleration: " + std::to_string(value)  +  " maps to frequency: "
-            + std::to_string(instrumentData.fundamentalFrequency) << std::endl;
         }
 
         auto dimens = curve->get_dimensionality_at(time);
@@ -840,8 +837,8 @@ void mainloop()
                 char sendBuffer[512];
                 char sendBuffer2[512];
                 oscpController.sendFrequencyChange(instrumentData.fundamentalFrequency, &sendBuffer, std::size(sendBuffer));
-                oscpController.checkAndSendDimensionalityChange(prevDimensionality, dimens.c_str(), &sendBuffer2, std::size(sendBuffer));
-                prevDimensionality = dimens.c_str();
+                oscpController.checkAndSendDimensionalityChange(prevDimensionality, dimens, &sendBuffer2, std::size(sendBuffer));
+                prevDimensionality = dimens;
             }
         }
     }
